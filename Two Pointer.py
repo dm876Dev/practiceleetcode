@@ -168,11 +168,33 @@ class Solution:
 
 
 #https://leetcode.com/problems/squares-of-a-sorted-array/
+#two pointer way
+class Solution:
+    def sortedSquares(self, nums: list[int]) -> list[int]:
+       #1 way
+        l , r, i = 0, len(nums) -1, len(nums) -1 # tuple unpacking-of items need to match # of variables; CANT USE THE SAME VALUE for two diff variables ever.
+        arr = nums.copy() #copy of array which we will overwrite later right to left, same length
+        while l <= r:
+            if abs(nums[l]) > abs(nums[r]): #if the left is BIGGER than right we move it up
+                arr[i] = nums[l] **2
+                l += 1
+            else:
+                arr[i]= nums[r] **2 #if the right pointer is SMALLER than right we move it back
+                r -= 1
+            i -= 1 # Move one position left in the arr
+        return arr
+
+
+#else insteadof another if statement bc its just convention rather than doign two ifs, also cus it checks the udpated values not original ones, and we wanna compare two original values each iteration!
+#arr = [0] * len(nums) #  Preallocate an array filled with 0s as temporary placeholders(to allocate enough space), so we can fill it from right to left
+
+#easy way
 class Solution:
     def sortedSquares(self, nums: list[int]) -> list[int]:
         #inuition is iterating through array squaring it, using sort built in function
        for i in range(len(nums)): #loop through index entire length not including last (0 to len(nums)-1, range ensures its ascending)
-            nums[i] **= 2 #square i: the current element times itself
+            nums[i] = nums[i] **2 
+            #nums[i] **= 2 #square i: the current element times itself
        nums.sort()
        return nums
 
@@ -181,6 +203,12 @@ class Solution:
         #descending-
         #nums.sort(reverse = True return nums 
         #new_list =  sorted(nums, reverse = True) return new_list
-        
+
+       #Two pointer method(more efficent time complexity)- 
+       #Two ways- 1) Building the result from smallest to largest and reversing
+       #2) more optimized version- we fill the result array from the end(largest) to the beginning(progressively smaller inward)
+
+
+
             
         
