@@ -166,6 +166,21 @@ class Solution:
         s = str(x)
         return s == s[::-1]
 
+
+#https://leetcode.com/problems/squares-of-a-sorted-array/
+class Solution:
+    def sortedSquares(self, nums: list[int]) -> list[int]:
+        #inuition is iterating through array squaring it, using sort built in function
+       for i in range(len(nums)): #loop through index entire length not including last (0 to len(nums)-1, range ensures its ascending)
+            nums[i] **= 2 #square i: the current element times itself
+       nums.sort()
+       return nums
+
+       #arr = sorted(nums) #nums.sort() #return True # Sorts in ascending order, modifying it
+       #return arr
+        #descending-
+        #nums.sort(reverse = True return nums 
+        #new_list =  sorted(nums, reverse = True) return new_list
         
             
         
