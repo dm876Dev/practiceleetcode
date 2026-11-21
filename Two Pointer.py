@@ -168,7 +168,13 @@ class Solution:
 
 
 #https://leetcode.com/problems/squares-of-a-sorted-array/
-#two pointer way
+#two pointer way OPTIMIZED(AVOIDS REVERSING AT THE END!)-
+
+#Because the sorted input guarantees the largest absolute value is at either end we can then use two pointers to acheivent mroe efficent time complexity: O(n) time.
+#Since the input array is already sorted, the largest absolute value is guaranteed to be at one of the two ends.
+#However, squaring can change their order, so we use two pointers to compare absolute values at both ends and place the largest square first,going inward filling new array from right to left.
+# We're optimizing this way avoiding reversal step from  the other way which is building it largest to smallest then having to reverse it
+
 class Solution:
     def sortedSquares(self, nums: list[int]) -> list[int]:
        #1 way
