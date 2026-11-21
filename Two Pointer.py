@@ -147,6 +147,25 @@ class Solution:
         #second mdidle node means a linked list of even num of nodes has 2 middle nodes 3 and 4, so it woudl return 4 if it were even
         #Big O(n) tiem complexity bc its one loop through the structure
 
+
+#https://leetcode.com/problems/palindrome-number/ 
+class Solution:
+    def isPalindrome(self, x: int) -> bool:
+        #two pointer, more space-efficent O(1) constant extra space, compares without makign copy or even modifying:
+        #T: O(1), S: O(1)
+        s = str(x)
+        l, r = 0, len(s)-1
+        while l < r :
+            if s[l] != s[r]: #can compare the characters from oppsoite ends without making a copy
+                return False
+            l += 1
+            r -= 1
+        return True
+    # easy way, but less space efficent S: O(n), T: O(n)
+    # creates new string in memroy takes up uncessary space
+        s = str(x)
+        return s == s[::-1]
+
         
             
         
