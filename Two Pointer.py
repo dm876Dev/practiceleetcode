@@ -1,4 +1,5 @@
 #https://leetcode.com/problems/valid-palindrome/
+#opposite direction two pointer method
 class Solution:
     def isPalindrome(self, s: str) -> bool:
         l = 0
@@ -108,5 +109,44 @@ class Solution:
                 return False
             return True
             #return new_string == newstring[::-1]
+
+
+
+
+
+
+#https://leetcode.com/problems/middle-of-the-linked-list/
+#fast slow two pointer method(one direction):
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def middleNode(self, head: ListNode | None) -> ListNode | None:
+        slow = fast = head #same starting point
+
+        while fast and fast.next: #while fast node and next node exists
+            fast= fast.next.next #move the fast node forward by 2 nodes
+            slow = slow.next #move forward by one node
+        return slow #return the the middle one AKA second middle since this fucntion works for both examples even and odd num of nodes 
+
+        #fast → True (a node exists)
+        #fast.next → False (no next node exists)
+        #while fast ndoe exists and next node after it exits, keep looping
+
+class Solution:
+    def middleNode(self, head: ListNode | None) -> ListNode | None:
+        #fast and slow two pointer technique
+        start = fast = head #set our two pointers to same starting vlaue
+        while fast and fast.next: #while our first pointer to go eexists and the next ndoe also exists loop
+            fast = fast.next.next #move node two nodes forward
+            slow = slow.next #move mode one ndode foward
+        return slow #same middle node as secodn middle ndoe value
+        #fast is moving twice as fast as the slow so when it reachess the end slow pointer reaches the middle
+        #second mdidle node means a linked list of even num of nodes has 2 middle nodes 3 and 4, so it woudl return 4 if it were even
+        #Big O(n) tiem complexity bc its one loop through the structure
+
+        
             
         
