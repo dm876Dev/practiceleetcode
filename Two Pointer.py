@@ -36,7 +36,7 @@ class Solution:
 
 class Solution:
     def isPalindrome(self, s: str) -> bool:
-        #use generator to create a new string
+        #use expression generator to create a new string
         new_string = ''.join(c.lower() for c in s if c.isalnum())
 
         if new_string != new.string[::-1]:
