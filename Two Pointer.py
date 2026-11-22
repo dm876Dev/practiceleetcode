@@ -18,37 +18,26 @@ class Solution:
             r -= 1
         return True   #if entire loop passes all our checks, our string is a palidrome
 
-
-        #Reversing the string using string slicing [::-1]
-        #1st)start with empty string since(''.join()) to combine chracters into one string without spaces
-        #do conversion inside- convert the characters to lowercase
-        # follow that with list comphrension check if c is alphanumeric
-        # if statment comaprsion between new string and reversed string return true if not false
-
-        #""new_s=''.join(c.lower) for c in s if c.isalnum(())
-        #if new_s== new_s[::-1]:
-        #  return False
-        #return True
-
-
-
-#you can also do reversing the string with string slicing-
+    
+#you can also do reversing the string with string slicing g [::-1]-
 
 class Solution:
     def isPalindrome(self, s: str) -> bool:
         #use expression generator to create a new string
+        
+        # Create a new string using .join() on empty seperate '' to combine characters without spaces
+        # and use generator expresion- new_list = [expression for item in iterable if condition]
+        # it loops through each character in s, filters out anything that isn't a letter or number, 
+        # and converts  remaining characters to lowercase, finally joins them together into new_string.
+        
         new_string = ''.join(c.lower() for c in s if c.isalnum())
-
+        
         if new_string != new.string[::-1]:
             return False
         return True
 
 class Solution:
     def isPalindrome(self, s: str) -> bool:
-        # Create a new string using .join() on empty seperate '' to combine characters without spaces
-        # and use list comprension inside, our expression convert characters to lowercase then our for loop if condition keep only alphanumeric characters
-        
-
         # Comparison check: Compare normal strings to reversed string, return False if they don't match
         if new_string != new_string[::-1]:
             return False
@@ -60,7 +49,6 @@ class Solution:
 class Solution:
     def isPalindrome(self, s: str) -> bool:
         new_string = ''.join(c.lower() for c in s if c.isalnum())
-        #new_list = [expression for item in iterable if condition]
         
         if new_string == new_string[::-1]:
             return True
