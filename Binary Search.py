@@ -49,7 +49,20 @@ def binary_search(arr: List[int], target: int):
     return first_true_index # return first True index, or -1 if no valid candidate was found
 
 
+#SO from past 3 months should prioritize these lc
 
+# Do first 3(last 30 days, then rest)
+# 1. Binary Search (Easy)
+# Koko Eating Bananas (Medium)
+# 2. Search Insert Position (Easy)
+# 3. Find First and Last Position of Element in Sorted Array (Medium)
+# 4. Search in Rotated Sorted Array (Medium)
+# 5. Find Minimum in Rotated Sorted Array (Medium)
+# Last priority
+# 6. Valid Perfect Square (Easy)
+# 7. Sqrt(x) (Easy)
+# 8. Find Peak Element (Medium)
+# 9. Single Element in a Sorted Array (Medium)
 
 
 
