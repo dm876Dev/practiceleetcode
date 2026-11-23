@@ -33,6 +33,8 @@ def binary_search(arr: list, target: int):
 # Example: [False, False, False, True, True, True]
 # Binary search finds the first True: everything before it is False, and everything after it is True.
 
+## We're looking for the first True, not just any True, so we keep searching earlier : 2 exs:  first_true_index = -1; if no True is found, return -1.
+
 def binary_search(arr: List[int], target: int):
     left, right = 0, len(arr) - 1
     first_true_index = -1 # store best candidate so far; keep searching earlier, hence -1
@@ -45,8 +47,6 @@ def binary_search(arr: List[int], target: int):
             left = mid + 1 # if not feasible, search the right half
             
     return first_true_index # return first True index, or -1 if no valid candidate was found
-
-
 
 
 
