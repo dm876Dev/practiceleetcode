@@ -65,38 +65,21 @@ def binary_search(arr: List[int], target: int):
 # 8. Find Peak Element (Medium)
 # 9. Single Element in a Sorted Array (Medium)
 
-#4 Types you need to practice-
-# 1. Classic Binary Search LEARNED
+#Boundary Binary Search is often called Monotonic Binary Search- finding first True or last True
+
+
+#Differeniate
+#  1. Classic Binary Search
 # - Find a target in a sorted array.
-# - Compare arr[mid] with target.
-# - Eliminate half the search space each time.
-# Practice:
-# - Binary Search
-# - Search Insert Position
+# - Know left, right, mid.
+# - Know when to use left = mid + 1 vs. right = mid - 1.
 
-# 2. Boundary Binary Search (First / Last Occurrence)
-# - Find the first or last position where a condition is true.
-# - Instead of stopping when you find a match, keep searching for an earlier or later match.
-# - Often uses answer = -1 to store the best candidate.
-# Practice:
-# - Find First and Last Position of Element in Sorted Array
+# High priority
+#  Binary search on Monotonic Condition
+# - Store mid in the candidate key 
+# - Know why you continue searching after finding a match.
 
-# 3. Modified Binary Search (Rotated / Partially Sorted Arrays)
-# - The array is sorted but has been rotated or changed in some way.
-# - Figure out which half is still sorted, then decide where to search.
-# Practice:
-# - Search in Rotated Sorted Array
-# - Find Minimum in Rotated Sorted Array
-
-# 4. Binary Search on the Answer (Feasibility / First True) LEARNED
-# - You're not searching for a target in an array.
-# - You're searching for the smallest or largest possible answer.
-# - Use a feasible(mid) function to check whether a candidate answer works.
-# - Narrow the search based on True/False.
-# Practice:
-# - Koko Eating Bananas
-# - Minimum Size Subarray Sum (also sliding window)
-
-
-
-    
+#  3. Binary Search on the Answer/feasible mid
+# - Understand if feasible(mid).
+# - Find the smallest or largest valid answer.
+# - Know how to update the search space based on True/False.
