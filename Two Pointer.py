@@ -204,5 +204,88 @@ class Solution:
 
 
 
-            
+#LeetCode 151 – Reverse Words in a String
+#https://www.youtube.com/watch?v=-ggUxN7bFjU
+
+
+# Logic: Parse out each word, store it in a list, then return the words in reverse order, joined with single spaces.
+# One option(easy) is splitting the string into words, and reversing it afterward using built in reverse method
+# Another easy cop out would be parse out the words, and append it to the end of a list, and reverse at the end
+# My Strategy: Optimization in terms of time complexity: Use a double-ended queue (deque) & instead of appending each word to the end of our que
+# we used appendleft to append to end of our deque, eliminate extra step
+
+
+#1st solution- Split join Method:
+
+class Solution:
+    def reverseWords(self, s: str) -> str:
+        words = s.split()               # Split string into individual words (removes extra spaces)
+        words.reverse()                 # Reverse the order of the words
+        return " ".join(words)           # Join words with single spaces
+
+T:O(N) S:O(N)
+
+#2nd solution- String Builder Method
+#Same direction two-pointer approach -to move (left to right) through the string
+PSEUDOCODE
+FUNCTION reverseWords(s):
+
+    Create stringbuilder = deque()  # Storing our result, our words in reverse order
+# double-ended que- a strcture that allows you you add/remove elements in constant time to both front/ back 
+
+    start = 0 #initialize first pointer: starting index, beginning of word 
+    i = 0 #second pointer: counter index, moves rightward to find end of the word
+
+    WHILE i < length of s: #while we have not reached the end of the string
+        IF s[i] is not a space: #find the start of a word
+            start = i #save word's starting index
+
+            WHILE i < length of s AND s[i] is not a space: #Continue until reaching a space(before it) or end of the string
+                i += 1 #find the end of the word
+
+            Add s[start:i] to LEFT of deque #next, we extract the word from starting index up to excluding index i
+            #appendleft() we use to AVOID EXTRA STEP REVERSING AT THE END! bc it store in reverse order 
+            #it adds to beginning of the deque: ["world", "hello"]
+            #append() adds to the right (end of the deque): ["world", "hello"]
+            #we must pair it with .reverse() at end which requires O(N) so more time  
+        i += 1  #we can skip the space and move forward
+
+    RETURNs our stringbuilder: the words joined with single spaces in between #" ".join(string_builder)
+
+#TYPED CODE-
+class Solution:
+    def reverseWords(self, s: str) -> str:
+        string_builder = collections.deque() #append to the left in constant time, so input will be in current order, and not need to reverse, saving one iteration
+    #find all words in our string- identify start point continue right till hit white space, everything until that will be our word
+    #in python, string slicing, the end is not inclusive so itll get the entire string there
+        start = 0
+        i = 0 #pointer
+        while i < len(s): #while we havent reached end of string
+            if s[i] != " ": #and is not at a space, we can store our start index
+                start = i
+
+                while i < len(s) and s[i] != " ": #parse out entire string; moving pointer forward until hit a space or the end
+                    i += 1
+                string_builder.appendleft(s[start: 1]) #extract the word from start up to, but not including, i
+            i += 1  # move to the next character
+        return " ".join(string.builder) #join the words with a single space between them and return the result
+    
+    #T: O(N) left to right thru string no going left to right thru string
+    # S: O(N)  length of words in string, worst case in no white spaces bc we need to store every single word
+
+#Recap (brief) or just read above-
+# 1) Traverse the string from left to right and parse out each word.
+# 2) Store each word in a deque using appendleft() to store in reverse order
+# 3) Join the words using join method, empty string seperator, to separate them up w spaces
+# 4) Return the final reversed string
+
+#Difference in split vs dequue approaches
+#split handles the parsing automatically, then reverse list VS deque you manually parse each word, use appendleft() 
+#to build the reversed order immediately.
+
+# Potential interview follow up-Can you solve this problem using less extra space, without a deque?
+Yes. I can convert the string into a array using chars = list(s),  and modify in place which owuld give me O(1) space 
+# which avoids creating a new array, or using a deque(which creates a new container).  I'd usechars.reverse() to 
+#reverse entire string, and then  reverse again each individual word TO restore the Letter Order + clean 
+#up the spacing. 
         
