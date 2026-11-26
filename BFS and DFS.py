@@ -567,34 +567,67 @@ def bfs_graphs(graph, root):
 
 
 #LC 399 Evaluate Division- BFS GRAPHS
-from collections import deque, defaultdict
+
+# Given a list of equations [a,b], [b,c], etc
+# - [a, b] represents a/b, where a is the numerator and b is the denominator.
+# 1. How does it work from the example:
+# - To find a/c, multiply a/b × b/c. The middle variable (b) cancels out, leaving a/c.
+# - This leads to the intuition in the code: map every variable to all the variables it can be divided by.
+# 2. We know that we should turn the equations into a graph
+# - How: build an adjacency list where each variable(node) points to its connected neighbors along with the edge weight.
+# 3. Account for reverse directions
+# - Forward (a → b): Use the original equation value #since a/b = value from our word problem
+# - Backward (b → a): Use value's reciprocal (1/value) so the math stays correct. 
+    
+#T:Number of queries (Size of graph( N * e)
+#S: V+e size of grpah
+                                                                      
+from collections import deque, defaultdict # deque lets us efficiently remove items from the front of the BFS queue; defaultdict(list) automatically creates an empty list for each new variable in the graph.
 
 class Solution:
     def calcEquation(self, equations, values, queries):
 
-        graph = defaultdict(list)  # Create an adjacency list to store neighbors and their division values.
+        graph = defaultdict(list)  # build graph(adj list) using defaultdict(list)where map a to a list of pairs(b(denom), a/b(eq))
+        #automatically creates an empty list for each new variable in the graph.
+        #here we're creating an adjacency list where each node maps to a list of its connected nodes and the result of dividing by each one
+        for i, (a, b) in enumerate(equations):  # Go through each equation and get its matching index in nodes.
+            graph[a].append((b, values[i]))  #Build directed edge, store b as a neighbor of a, and the equation a/b which is values at index i 
+            graph[b].append((a, 1 / values[i]))  # Same thing in opposite direction,take inverse of the equation 
 
-        for i, (a, b) in enumerate(equations): #loops through a list and gives you both the index (position) it's item/value: dictionary key value pairs
-            graph[a].append((b, values[i]))  # Add b as a neighbor of a with weight a / b.
-            graph[b].append((a, 1 / values[i]))  # Add a as a neighbor of b with the reciprocal weight.
-
+        #Run bfs, a/b a->b root is a, find a path starting from a geting to b and multiply the weight of the edges and return that
         def bfs_graphs(graph, root, target):
-            if root not in graph or target not in graph:
-                return -1  # If either variable does not exist in the graph, return -1.
-            queue = deque([(root, 1)])  # Create a deque (queue) and add the starting node and running product.
-            visited = set([root])  # Create a set to track visited nodes, starting with root.
-
-            while len(queue) > 0:  # Keep looping while the queue isn't empty.
-                node, product = queue.popleft()  # Remove and return the first node and its running product.
-                if node == target:
-                    return product  # If the current node matches the target, return the running product.
-                
-                for neighbor, weight in graph[node]:  # Loop through all neighbors and their division values.
-                    if neighbor in visited:  # Check if the neighbor has already been visited.
-                        continue  # Skip this neighbor and move to the next one.
-                    visited.add(neighbor)  # Mark the neighbor as visited to prevent revisiting.
-                    queue.append((neighbor, product * weight))  # Add the neighbor and update the running product.
-            return -1  # If no path to the target is found, return -1.
             
-        return [bfs_graphs(graph, q[0], q[1]) for q in queries]  # Use BFS for each query, passing q[0] as the starting variable and q[1] as the target variable, 
+            if root not in graph or target not in graph:
+                return -1  # Return -1 if either root or target does not appear in the graph(adjaceny list we made)
 
+            queue = deque([(root, 1)])  # Start with the root node and store its index
+            visited = set([root])  # Track nodes of we already visited.
+
+            while len(queue) > 0:
+                node, weight = queue.popleft()  # Get the next node and the edge weight(product of the nodes multiplied) calculated to reach it.
+                if node == target: #if we get to a point where node is equal to target, we returnn the weight
+                    return weight  
+                for neighbor, wei in graph[node]:  # Go through every neighbor and pair(neighbor, weight aka b,a/b)
+                    if neighbor in visited: # Skip neighbors we have already visited.
+                        continue  
+                    visited.add(neighbor)  # Mark the node as visited.
+                    queue.append((neighbor, weight * wei))  # Multiply the current product by the new weight result and add the neighbor to the queue.
+
+            return -1  # Return -1 if there is no path from the source to the target.
+
+        return [bfs_graphs(graph, q[0], q[1]) for q in queries]  # Run BFS from each query's first variable to its second variable and collect the results.
+# Recap
+# 1. Build the Graph (Adjacency List)
+#    - Loop through each equation (a / b = val).
+#    - Add a forward edge: a -> b with weight val (representing a / b).
+#    - Add a backward edge: b -> a with weight 1 / val (representing b / a).
+
+# 2. Initialize BFS Queue & Tracking
+#    - Check if the start and target variables exist in the graph (return -1 if not).
+#    - Set up a queue holding tuples of (current_node, current_weight). Start with the root node and a weight of 1.
+#    - Set up a visited set to track nodes you've already explored.
+
+# 3. Traverse & Accumulate Products
+#    - Pop the front node and its running weight from the queue.
+#    - Check: If this node is your target, you're done—return the product!
+#    - For each unvisited neighbor, push (neighbor, weight * edge_weight) into the queue and mark it as visited so intermediate variables cancel out along the path.
