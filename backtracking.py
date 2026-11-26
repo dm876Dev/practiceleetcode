@@ -41,43 +41,82 @@ def backtracking(self, n: int) -> List[str]:
           path.pop()
         
 #22. Generate Parentheses Solutions- 
-#
-# Big idea
-# Generate all valid combinations that produce ////
-# adding one parenthesis at a time but only make a choice if it keeps the string valid. Backtrack to undo the choice 
-#and try the other option.
-#FIXXXXXXXXXXXXXX
+
+# Big idea:
+# Build all valid combinations one parenthesis at a time.
+# Only make choices that keep the combination valid.
+# Backtrack to undo a choice and try the other option.
+# Strategy: Backtracking, with recursion and a path(store current combination we're building) to add to our result of all combinations
+#Backtracking, you make a choice and explore it recursively, undo your last choice to allow trying others
+Brute force brainstorming: 
+# Ex 1: n = number of pairs. n = 3 means theres 3 "(" open and 3 ")" closed parenthesis
+-> Base case: open == closed == n, this is a complete combination we must return 0/None 
+# the order matter's: the open ( of the pair, must come before its closed counterpar to a valid combot, so it must be greater in the count so far
+->2 counts: open_count, close_count
+-> Add "(" if open_count < n (can't exceed n pairs)
+-> Add ")" if close_count < open_count (must have a matching "(" first).
+#    Example: ")(" is invalid.
+
+#Pseudo code:
+FUNCTION generateParenthesis(n)
+    results = [] #list of all completed valid parenthesis combinations
+
+    # BACKTRACK helper to build valid parentheses combinations
+    FUNCTION backtrack(path, open, closed) #path tracking the current combination being built, #open and closed parethesis counts
+
+        # Base case: since we can have up to n open and n closed, if we've reached maxiumum of n open and n closed 
+        IF open == n AND closed == n THEN # 
+            ADD path TO results #save the combination
+            RETURN 0 #stop exploring the path
+
+        #Try adding an opening parenthesis if we haven't reached n yet
+        IF open < n THEN #1st rule
+            ADD "(" TO path #append a open parenthesis
+            CALL backtrack(path, open + 1, closed) #recursive call, increment the open count, closed count remains same
+            REMOVE last character FROM path #after recursion, we pop the character undo the choice to allow us to explore other combos
+  #EX: for "((", path.pop() removes the last "(" so you can try adding ")" instead.
+                              
+       # Try adding a closing parenthesis as long its current count is less than the open count (same idea)
+        IF closed < open THEN 
+            ADD ")" TO path #append closing parethesis to our path
+            CALL backtrack(path, open, closed + 1)  #recursive call, incrementing the closed count, open remains same
+            REMOVE last character FROM path 
+
+
+  #Start BACKTRACK with an empty path and 0 open and closed
+    CALL backtrack("", 0, 0) #path is initially empty
+    RETURN results #return list of valid parenthesis
+
 
 class Solution:
     def generateParenthesis(self, n: int) -> List[str]:
-        res = []
-      
-      def dfs(path, open_count, close_count):
-          #base case: reached a complete valid string when we've added 2*n parentheses
-          if len(path) == 2 * n: 
-              res.append("".join(path))  # join the path into a string and add it to results
-              return
-  
-          #each step try adding either "(" or ")" to the current path
-          for edge in ["(", ")"]:
-  
-              #prune early: skip choices that would make the parentheses invalid
-              if edge == "(" and open_count == n:  # can't add more than n opening parentheses
-                  continue
-              if edge == ")" and close_count == open_count:  # can't close unless there's an unmatched "("
-                  continue
-  
-              path.append(edge)  # add the chosen parenthesis to the current path
+        res = [] #empty list that stores all valid combinations  
 
-        dfs([], 0, 0)
-        return res
+        #Helper function so we can 1)recursively call it, keep track of path and the counts
+        def backtrack(path, open_count, close_count): 
+          
+          # Base case: if we used all open and closed parenthesis(limited up to n), save path to our result of all combos & stop exploring the path
+            if open_count == n and close_count == n:
+                res.append("".join(path))
+                return 0
 
-1. Initialize: Create res to store completed valid strings.
-2. Start DFS: Begin with an empty path and both open_count and close_count set to 0.
-3. Base case: Once the path contains 2 * n parentheses, join it into a string, add it to res, and return.
-4. Try choices: Loop through ( and ) as the next possible characters.
-5. Prune early: Skip ( if we've already used n opening parentheses. Skip ) if there is no unmatched ( to close.
-6. Add choice + update: Append the chosen parenthesis to path and update its corresponding count.
-7. Recursive call: Call DFS to continue building the string with the updated path and counts.
-8. Revert: Use path.pop() to remove the last choice so we can try another option.
-9. Return: Once DFS finishes exploring all valid combinations, return res.
+            # Add open parenthesis if we have used less than n pairs 
+            if open_count < n:
+                path.append("(")
+                backtrack(path, open_count + 1, close_count) #recursive call, incremened open
+                path.pop()  # after recursive backtracking, remove last parenthesis so can explored other valid combinations
+                #EX: for "((", path.pop() removes the last "(" so you can try adding ")" instead.
+
+            # Add closed parenthesis as long closed count is less than open 
+            if close_count < open_count: #open must be greater bc must have the open must come before its closed to be a valid combo
+                path.append(")")
+                backtrack(path, open_count, close_count + 1) #increment closed
+                path.pop()  # after backtracking, remove last parenthesis
+
+        backtrack([], 0, 0) #call our function, start with a empty and 0 parenthesis
+        return res #call completed functions
+
+#Extra: I chose path not a stack : Path not a stack because we're  building a current solution/combination, 
+#vs a stack trackes the nodes waiting to be explored(in a graph or tree)
+
+  
