@@ -139,7 +139,7 @@ def get_neighbords(graph, node)
 # 3. Iterative BFS Tree
 # 4. Iterative BFS Graph
 # 5. Iterative DFS (stack)
-
+#DFS usuall (E + V) :num of edges and nodes, its cells that are connected n^2 worst, Space: O(N^2)
 
 
 
@@ -151,7 +151,7 @@ def get_neighbords(graph, node)
 #Recursive DFS Tree Template
 def dfs(root):
     if root is None:
-        return
+        return 0
 
     dfs(root.left)
     dfs(root.right)
@@ -220,3 +220,249 @@ def dfs_tree(self, root): #preorder traversal
 #   udating our result throughout
 # Push(append) current node's left and right children onto the stack with depth + 1.
 # Continue until the stack is empty, then return the maximum depth.
+
+#Trees are acyciclal so we dont need to worry whether the same node been visited vs for graphs, we must keep track of marking the node
+
+
+#DFS Graph recursive 
+def dfs_graph(graph, node, visited):
+    if node in visited: #if node already visited, stop exploring the graph
+        return 0
+
+    visited.add(node) # mark current node as visited
+
+    for neighbor in graph[node]: #for each neighbor in the graph -check all the neighbors
+        if neighbor not in visited: #if the neighbor has not been visited
+            self.dfs_graph(graph, neighbor, visited) #explore recursively
+
+#DFs Graph Iterative 
+class Solution:
+    def dfs_graph(self, graph, root, visited):
+
+        stack = [root]  # Start with the starting node.
+        visited.add(root)  # Mark it as visited.
+
+        while stack:  # While stack is not empty.
+            node = stack.pop()  # Remove the most recently added node store it as node
+
+            for neighbor in graph[node]:  # Check all neighbors
+                if neighbor in visited: #if already visited
+                    continue  # Skip the node and keep going 
+                visited.add(neighbor)  # Mark neighbor as visited
+                stack.append(neighbor)  # Append/add neighbor to the stack
+
+#DF TREE VS GRAPH: trees have a built-in structure (left and right children), while graphs have connections (neighbors) that can form cycles.
+#Needs visited to prevent revisiting nodes and getting stuck in cycles
+#Explores all connected neighbors
+
+#547 Number of Provinces
+#Given: a -> b , b-> c , a->c indirectly, "isConnected[i][j] is 1 or 0" at the end means its a adjancy matrix which shows whether each pair of nodes is connected 1 is if connected, 2 is if not
+#Vocab: group of conencteed cities is called a province
+#Goal: return the total num of provinces, so looking for a set of connected components
+
+# Strategy: Use DFS to find all connected components (provinces).
+# Core idea: Keep track of visited nodes using a set and maintain a running count of provinces.
+# Loop through each node: if already visited, skip it because it belongs to a connected component (province) we already explored.
+# If not, increment our province count(BEFORE starting DFS)
+# And start DFS to visit all connected nodes, updating visited.
+# Continue our loop until connected components all visited, and return the count
+
+# For example, we have these connected components rep our provinces: 
+# 1-2, 3-4-5, 6
+# start at node 1 and explore that component (2) with DFS
+# there no more unvisited nodes, increment province count by 1, then we and start loop over, skipping 2. 
+
+# start at node 3 and explore nodes 3, 4, and 5.
+# Once DFS finishes, increment our province count by 1.
+# Go back to the loop: it skip nodes 4 and 5 because they're already visited.
+# If we reach node 6 and it hasn't been visited, start another DFS 
+
+# Check all nodes connected to 6, then increment our count by 1.
+# All nodes have been checked, return connected component count: 3
+
+#Recursive: first write everything skipping the helper then after count before the for loop add the helper function(at the top
+
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+
+        n = len(isConnected)  # Get number of nodes
+        visited = set()       # Keep track of visited nodes
+        count_of_provinces = 0
+
+        # DFS helper function
+        def dfs(i):
+            visited.add(i)  # BASE CASE(stopping condition): when we visit a node, add it to visited set, prevents us from revisiting the same node and be stuck in a loop
+            for j in range(n): # Go through neighbors and check which nodes are connected.
+                if j not in visited and isConnected[i][j] == 1:
+                    dfs(j)  # Recursive call: explore connected node j
+
+        for i in range(n): # Go through every node (0 to n-1)
+            if i not in visited:
+                dfs(i)
+                count_of_provinces += 1
+
+        return count_of_provinces
+
+
+#Instead of recursively calling DFS on each connected, unvisited node, we add it to the stack. 
+#We keep popping (removing) nodes and pushing (adding) their unvisited neighbors until the stack is empty.
+
+
+#Iterative DFS on Graph:
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+        n = len(isConnected)  # Get number of nodes.
+        visited = set()       # Keep track of visited nodes.
+        count_of_provinces = 0
+
+        for i in range(n):    # Go through every node (0 to n-1).
+            if i not in visited:
+                stack = [i]   # Start stack with the current node.
+                visited.add(i)
+
+                while stack:  # While stack is not empty.
+                    node = stack.pop()  # Remove most recently added node.
+
+                    for j in range(n):  # Check every possible neighbor.
+                        if j not in visited and isConnected[node][j] == 1:
+                            visited.add(j)  # Mark neighbor as visited.
+                            stack.append(j) # Add neighbor to stack.
+
+                count_of_provinces += 1  # Finished exploring one province.
+
+        return count_of_provinces
+ 
+
+# Leetcode 200: Number of Islands
+# It's an adjacency matrix (2D grid of rows and columns): "1" = land, "0" = water.
+
+# Higher-level big idea:
+# - Find an unvisited "1" → increment island count.
+# - DFS explores all connected "1"s all 4 directions(up, down, left, right), marking them visited (4 direction check)
+# If it finds an unvisited "1" , it recursively moves to that cell and repeats the same check
+# - Stop when there are no more connected land cells
+# Keep scanning for another unvisited "1" ignoring the water "Os" → count the "1" as a new island, and repeats recursion
+# - Return the total number of islands.
+
+
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+
+        m = len(grid)  # Get number of rows
+        n = len(grid) #get number of columns
+        visited = set()       # Keep track of visited nodes.
+        count_of_islands = 0
+                
+        # DFS helper function
+        def dfs(r, c):  # Explore connected land starting from the current cell's coordinates (row and column).
+            visited.add((r, c))  # Mark current cell as visited.
+        
+            directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # Define the four directions we can move: right, left, down, up.
+        
+            for off_r, off_c in directions:  # Find the four neighboring cells (coordinates) around our current cell.
+                nr = r + off_r  # Calculate the neighbor's row coordinate by adding the row offset.
+                nc = c + off_c  # Calculate the neighbor's column coordinate by adding the column offset.
+        
+                # Some if checks to see if the neighbor is valid, land, and unvisited.
+                if (0 <= nr < m and 0 <= nc < n  # Check if the neighbor's row and column are within the grid boundaries.
+                    and grid[nr][nc] == "1"  # Check if it's land.
+                    and (nr, nc) not in visited):  # Check if it hasn't been visited.
+                    dfs(nr, nc)  # If it passes all those checks, recursively explore the next connected neighbor.
+        
+        # Go through every cell in the grid(all the rows and columns) if the current cell is land and hasn't been visited
+        #start DFS to explore its connected land cells, then increment the island count by 1.
+        for r in range(m):
+            for c in range(n):
+                if grid[r][c] == "1" and (r, c) not in visited:
+                    dfs(r, c)
+                    count_of_islands += 1
+
+        return count_of_islands #return the count
+
+# Keep track of visited cells and the running count of islands.
+# Define a recursive DFS helper function to explore connected land cells
+# Define the four directions to check around the current cell (right, left, down, up).
+# Inner for loop: goes through each direction to get the row and column offsets for the neighboring cell
+# If statment checks if the neighboring cell is within the grid, is land ("1"), and hasn't been visited.
+# If valid, recursively call DFS to explore the connected neighbor until there are no more 
+# Outer for loops scan the entire grid for unvisited "1" cells.
+# When an unvisited "1" is found, start DFS to explore its entire island.
+# Once DFS finishes exploring that island, increment the island count by 1.
+# Continue scanning the grid for more unvisited "1" cells.
+# Return the total number of islands.
+
+
+
+#DF Iteratively: With a stack (instead of recursive call) and visited set(bc graph, trees not)
+#Find an unvisited "1" (land) cell, ignoring the "0" water cells, and make visited set, make a stack to explore all 
+#connected neighboring cells horizontally and vertically) until the stack is empty, that would mean 
+#one complete island has been explored and visited, and we'd increment the island count
+# and we'd restart the process and search for the next unvisited "1" (land) cell
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+
+        m = len(grid)  # Get number of rows
+        n = len(grid) #get number of columns
+        visited = set()  # Keep track of visited nodes.
+        count_of_islands = 0
+        
+        # Go through every cell in the grid(all the rows and columns) if the current cell is land and hasn't been visited
+        for r in range(m): #outer loop scans entire grid
+            for c in range(n):
+                if grid[r][c] == "1" and (r, c) not in visited: #checks for if the current cell is land and hasn't been visited
+                    stack = [(r, c)] #Start a stack with current land cells coordinates(#rows, #columns
+                    visited.add((r, c))  # Mark current cell as visited.
+        
+
+            while stack: #while stack is not empty
+                r, c = stack.pop() #remove the most recently aded cell to explore it
+                directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] #heres are the 4 directions we can move 
+                #same row move 1 right, one left, 1 row down/up, same column
+            
+            #Find the 4 neighbor cells(coordinates of):    
+            for off_r, off_c in directions:  #go through each of the four directions, getting the row offset (off_r) and column offset (off_c) for each one.
+                nr = r + off_r  # get the neighbor's row coordinate by adding the row offset to current cells row
+                nc = c + off_c  # get the neighbor's column coordinate by adding the column offset to current cells column
+            
+                # Some if checks to see if the neighboring cell is within the grid, is land, and hasn't been visited.
+                if (0 <= nr < m and 0 <= nc < n  # Check if the neighbor's row and column are within the grid boundaries.
+                    and grid[nr][nc] == "1"  # Check if it's land.
+                    and (nr, nc) not in visited):  # Check if it hasn't been visited.
+                    
+                    # Add valid neighbors: Mark the neighbor as visited and add its coordinates to the stack.
+                    visited.add((nr, nc))
+                    stack.append((nr, nc))
+                        
+            count_of_island += 1  #increment the count after the stack is empty to add a new island; continue scanning the grid.
+            
+        return count_of_islands #return the count
+
+# Keep track of visited nodes and running count of islands
+# Enter outer for loop: scaning the entire grid, find an unvisited "1" (new island)
+# if statement confirms its land and unvisited
+# Initialize stack: Add its coordinates and mark it visited (so our stack stores connected 1 cells that need to be explored)
+# Inner while loop: Pop cells from the stack and check their four neighbors until the stack is empty.
+# Find the neighbors of the current cell, in 4 directions(adding the offset to original row or column, to get new coordinates of the neighbor cell)
+# Check if the neighbor is valid(within the grid coordinates), land, and unvisited
+# Mark the neighbor as visited and add its coordinates to the stack.
+# once the stack is empty, one complete island has been explored, increment the count. 
+# outer for loop resumes, continue scanning for unvisted "1"s
+# Return the total number of islands at the end
+
+#BFS
+#https://www.youtube.com/watch?v=2aA0JfkOCD4
+
+#BFS Tree Template
+
+#BFS Graph Template
+
+
+
+
+
+
+
+
+
+
+
