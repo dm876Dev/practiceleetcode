@@ -59,6 +59,7 @@ return result #or just combine both, return bfs(root, 5)
 # If neighbor is visited, skip it (continue). 
 # Otherwise, mark as visited and add to queue.
 
+#BFS graphs
 from collections import deque
 
 def bfs_graphs(root):
@@ -452,17 +453,148 @@ class Solution:
 #BFS
 #https://www.youtube.com/watch?v=2aA0JfkOCD4
 
-#BFS Tree Template
+# BFS for Trees Syntax
+from collections import deque 
 
-#BFS Graph Template
+def bfs_trees(root):
+    if not root: # If tree contains no root, return None.
+        return None  
+
+    queue = deque([root])  # Create a deque (queue) and start with the root.
+
+    while len(queue) > 0:  # While the queue is not empty (nodes still exist).
+        node = queue.popleft()  # Pop its left child, storing what is returned into node
+
+        # Do what problem asks to the current node (e.g., check its value, add to result, etc.).
+
+        for child in node.children:  # For any child amongst the node's children.
+            queue.append(child)  # Append each child to the queue.
+
+    return  # Return the result (depending on the problem).
 
 
 
+#LC 662 Maximum Width of Binary Tree
+#Big idea
+#looking at distance between the leftmost nonnull node and rightmost nonnull node
+# counting null/ missing nodes positions between the two < in exs below!
+#including the rightmost and leftmost nodes in our calculation? yes.
+
+# Strategy:
+# Use BFS to explore the tree level by level and find the widest level, 
+
+#Pseudo code-
+# if root is empty: return 0
+# queue = [(root, 1)] #Initialize queue with (root, position)
+# best = 0  # set best_max_depth = 0
+
+# while queue: # while que's not empty:
+#     l = leftmost non null node position
+#     r = rightmost non null node position
+#     width = r - l + 1
+#     best = max(best, width)
+
+#     for each node in current level: # Process each node at the current level:
+#         pop (node, pos) #Remove the first (node, position) pair from the queue.
+#         if left child: append (left, pos * 2)
+#         if right child: append (right, pos * 2 + 1)
+
+# return best
+
+from collections import deque
+
+class Solution:
+    def widthOfBinaryTree(self, root: Optional[TreeNode]) -> int:
+
+        if root is None:
+            return 0  # If tree is empty, return 0.
+
+        queue = deque([(root, 1)])  # Create a deque (queue) and start with the root and its position index (node, position)
+        best = 0  # Keep track of the maximum width.
+
+        while len(queue) > 0:  # While the queue is not empty (nodes still exist).
+            nodes_in_level = len(queue)  # Get the number of nodes at the current level.
+            best = max(best, queue[-1][1] - queue[0][1] + 1)  #Fidn larger width between the  best so far and current level's width 
+    #To get the current depth, we subbtract from the last node's position the first notes position and add 1 so we don't leave out the starting (first) positions.
+            for i in range(nodes_in_level):  # Process each node at the current level.
+                node, pos = queue.popleft()  # Pop from left side, storing the node and its position index.
+
+                if node.left:  # If the current node has a left child.
+                    queue.append((node.left, pos * 2))  # Add the left child with its position index.
+
+                if node.right:  # If the current node has a right child.
+                    queue.append((node.right, pos * 2 + 1))  # Add the right child with its position index.
+
+        return best  # Return the maximum width of the binary tree.
+
+#Extra notes: 
+    #Since our queue stores: (node, position)
+    #queue[-1][1]  # Get the SECOND item in the last tuple
+    #queue[0][1]  # Get the SECOND item in first tuple
+    #Subtraction gives you the distance; adding 1 includes the starting (first) position.
+
+# Recap:                    
+# 1. Start the queue with the root and its position index.
+# 2. Get the number of actual nodes at the current level.
+# 3. Calculate the level's width using the first and last nodes' position indexes, including gaps.
+# 4. Update best with the largest width found so far.
+# 5. Remove each node and add its existing children with their position indexes.
+# 6. Repeat for every level and return best
+
+
+# BFS Graphs Template
+from collections import deque
+
+def bfs_graphs(graph, root):
+
+    queue = deque([root])          # Create a deque (queue) and add the starting node.
+    visited = set([root])          # Create a set to track visited nodes, starting with root.
+
+    while len(queue) > 0:           # Keep looping while the queue isn't empty.
+        node = queue.popleft()      # Remove and return the first node from the queue.
+
+        # Problem-specific logic (e.g., check target, update result, track values).
+
+        for neighbor in graph[node]: # Loop through all neighbors connected to the current node.
+            if neighbor in visited:  # Check if the neighbor has already been visited.
+                continue             # Skip this neighbor and move to the next one.
+
+            visited.add(neighbor)    # Mark the neighbor as visited to prevent revisiting.
+            queue.append(neighbor)   # Add the neighbor to the back of the queue.
+
+    return visited                  # Return all nodes visited during BFS.
 
 
 
+#LC 399 Evaluate Division- BFS GRAPHS
+from collections import deque, defaultdict
 
+class Solution:
+    def calcEquation(self, equations, values, queries):
 
+        graph = defaultdict(list)  # Create an adjacency list to store neighbors and their division values.
 
+        for i, (a, b) in enumerate(equations): #loops through a list and gives you both the index (position) it's item/value: dictionary key value pairs
+            graph[a].append((b, values[i]))  # Add b as a neighbor of a with weight a / b.
+            graph[b].append((a, 1 / values[i]))  # Add a as a neighbor of b with the reciprocal weight.
 
+        def bfs_graphs(graph, root, target):
+            if root not in graph or target not in graph:
+                return -1  # If either variable does not exist in the graph, return -1.
+            queue = deque([(root, 1)])  # Create a deque (queue) and add the starting node and running product.
+            visited = set([root])  # Create a set to track visited nodes, starting with root.
+
+            while len(queue) > 0:  # Keep looping while the queue isn't empty.
+                node, product = queue.popleft()  # Remove and return the first node and its running product.
+                if node == target:
+                    return product  # If the current node matches the target, return the running product.
+                
+                for neighbor, weight in graph[node]:  # Loop through all neighbors and their division values.
+                    if neighbor in visited:  # Check if the neighbor has already been visited.
+                        continue  # Skip this neighbor and move to the next one.
+                    visited.add(neighbor)  # Mark the neighbor as visited to prevent revisiting.
+                    queue.append((neighbor, product * weight))  # Add the neighbor and update the running product.
+            return -1  # If no path to the target is found, return -1.
+            
+        return [bfs_graphs(graph, q[0], q[1]) for q in queries]  # Use BFS for each query, passing q[0] as the starting variable and q[1] as the target variable, 
 
