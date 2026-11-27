@@ -459,16 +459,16 @@ class Solution:
 #    j = n - 1  #pointer at last element of nums2
 #    k = m + n - 1  #pointer at the last slot of nums1, where the biggest remaining value goes
 #
-#    WHILE j >= 0:  #only need to run while nums2 still has elements (leftover nums1 is already in place)
-#        IF i >= 0 AND nums1[i] > nums2[j]:  #nums1's element is bigger
-#            nums1[k] = nums1[i]
-#            i -= 1
-#        ELSE:  #nums2's element is bigger/equal, or nums1 ran out
-#            nums1[k] = nums2[j]
-#            j -= 1
-#        k -= 1  #this slot is filled, move left
+#  while j still has elements:   #while nums2 still has elements, loops, the rest of nums1 is already in place
+#    if i still has elements and nums1[i] > nums2[j]:  #nums1's element is bigger
+#        nums1[k] = nums1[i], i -=1
+#    else:  #nums2's element is bigger/equal, or nums1 ran out
+#        nums1[k] = nums2[j], j -=1
+#   k-=1  #that slot is filled
 #
-#    (no return, nums1 is modified in place)
+#  no return, nums1 is modified in place
+
+
 
 #1st solution- Three Pointers Method (filling from the back)
 class Solution:
@@ -521,23 +521,23 @@ class Solution:
 #Both empty -> return None. One empty -> return the other list. Equal values -> either one first is fine.
 
 #PSEUDOCODE
-#FUNCTION mergeTwoLists(list1, list2):
 #
+#FUNCTION mergeTwoLists(list1, list2):
 #    dummy = new node  #placeholder so the first real node isn't a special case
 #    tail = dummy  #tail always points at the last node of the merged list
 #
-#    WHILE list1 AND list2:  #while both lists still have nodes
-#        IF list1.val <= list2.val:
-#            tail.next = list1  #attach the smaller node
-#            list1 = list1.next  #move that list forward
-#        ELSE:
-#            tail.next = list2
-#            list2 = list2.next
-#        tail = tail.next  #move tail onto the node we just attached
+#    while list1 and list2:  #while both lists have nodes, loops
+#        if list1.val <= list2.val:  #list1's node is smaller
+#            tail.next = list1, list1 forward  #attach the smaller node, move that list forward list = list.next
+#        else:  #list2's node is smaller
+#            tail.next = list2, list2 forward  #attach the smaller node, move that list forward
+#        tail forward #move tail onto the node we just attached
 #
-#    tail.next = list1 OR list2  #at most one list has leftovers, they're already sorted so attach them whole
+#    tail.next = whichever list has nodes left  #at most one does, it's already sorted so attach it whole
 #
-#    RETURN dummy.next  #skip the dummy placeholder
+#    return dummy.next  #skip the dummy placeholder
+
+
 
 class Solution:
     def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
@@ -613,19 +613,20 @@ class Solution:
 class Solution:
     def mergeAlternately(self, word1: str, word2: str) -> str:
         # Time: O(n + m), Space: O(n + m)
-        res = [] #collect pieces here, join once at the end (faster than += on a string)
+        res = [] #list of characters/pieces, joined at the end (faster than += on a string)
         i = j = 0 #i = pointer for word1, j = pointer for word2, both start at the front
 
-        while i < len(word1) and j < len(word2): #both words still have letters
+        while i < len(word1) and j < len(word2): #while both words still have letters, loops
             res.append(word1[i]) #word1 goes first
+            i += 1 #move word1's pointer forward
             res.append(word2[j]) #then word2
-            i += 1 #move both pointers forward together
-            j += 1
+            j += 1 #move word2's pointer forward
 
-        res.append(word1[i:]) #leftover of word1 (empty string if it was used up)
-        res.append(word2[j:]) #leftover of word2 (only one of these two slices is non-empty)
+        res.append(word1[i:]) #leftover of word1, empty string if it was used up
+        res.append(word2[j:]) #leftover of word2, only one of these two has anything
 
         return "".join(res) #glue all the pieces into the final string
+
 
 # 1st Solution Logic:
 # The while loop handles the alternating part and stops as soon as the SHORTER word runs out.
