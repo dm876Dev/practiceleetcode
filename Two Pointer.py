@@ -288,4 +288,66 @@ Yes. I can convert the string into a array using chars = list(s),  and modify in
 # which avoids creating a new array, or using a deque(which creates a new container).  I'd usechars.reverse() to 
 #reverse entire string, and then  reverse again each individual word TO restore the Letter Order + clean 
 #up the spacing. 
-        
+
+#344 Reverse String 
+
+#1. Restate the problem
+#"So we're given an array of characters, and we need to reverse the order of the characters by modifying the 
+# original array."
+
+#Should I treat letters and numbers the same way, or is there alphanumeric or special character rule i should account for?
+#Im nodifying in place so it must modify the original array right are copies aren't allowed right?
+
+#I'll use two pointers method: one pointer starts at the beginning of the array and one at the end. I'll swap 
+#the characters at those positions, then them inward until they meet or cross. This reverses the array in-place 
+#with O(1) extra space.
+#Recursion is another option, but it requires O(n) call-stack space, so the iterative approach is more space-efficient.
+
+
+#I'd also consider a few edge cases(from the examples): odd-length array like hello leaves the middle l character in place, 
+#and an even-length array swaps every pair. also a single character requires no swaps.  So our code needs to accomodate that.
+
+#1st solution- Two Pointers Method
+class Solution:
+    def reverseString(self, s: list[str]) -> None:
+        # Time: O(n), Space: O(1)
+        l = 0 #We're just storing those index positions in variables
+        r = len(s)- 1 # two pointers, left will be index 0 , right is last index which is excluded so define as len(s) - 1
+        while l < r : # stops when the two pointers meet or cross
+            s[l], s[r] = s[r], s[l] #swap the two pointers, reassign two variables stimutaenously
+            l += 1 #increment left point,
+            r -= 1  #decrement right pointer
+            #no return statement needed when you're modifying object in place.
+    
+# 1st Solution Logic: 
+# Use two pointers: left starts at index 0, right at the last index.
+# Swap the first and last characters, then move both pointers toward the center.
+# Left pointer increments by 1; right pointer decrements by 1.
+# Continue until the pointers meet or cross.
+# The middle character (if odd length) stays in place.
+
+#- Time: O(n)   Each swap handles 2 characters, so n characters require about n/2 operation so O(n/2) but drop constants → O(n).
+#- Space: O(1)  Only two pointer variables (l and r); modify the original array in place.
+
+#2nd Solution- Another way, that WOULD NOT achieve the constraint of O(1) extra space, but it would solve it is
+#Recursion Method with a Helper Function 
+    class Solution:
+        def reverseString(self, s: list[str]) -> None:
+            #Time : O(n), Space: O(n)
+            def reverse(l,r): #reverse() is a helper function (function defined inside main function)
+                if l<r: #base case, when l < r becomes false, the function stops
+                    s[l], s[r] = s[r], s[l]
+                    reverse(l + 1, r - 1) #calls the same helper function again, making it recursive
+        reverse(0, len(s) - 1) #inital call to start the recursion
+
+#2nd Solution Logic: w the recursion
+# 1) Define a helper function reverse(l, r) that takes the left and right indexes.
+# 2) Base case: Stop when l >= r (pointers meet or cross).
+# 3) Swap s[l] and s[r].
+# 4) Recursively call reverse(l + 1, r - 1) to move inward and reverse the remaining characters.
+# 5) Start with reverse(0, len(s) - 1).
+
+# The recursive solution is less space-efficient because each recursive call uses space on the call stack.
+# Space: iterative is o(1) vs recursive is O(n)
+
+
