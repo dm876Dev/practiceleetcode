@@ -638,3 +638,455 @@ class Solution:
 #- Space: O(n + m)  the output string holds all characters (the list of pieces is the same size).
 
 
+
+=============================================================================
+#28 Find the Index of the First Occurrence in a String
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given two strings, haystack and needle, and I need to return the index where needle first shows up
+# inside haystack, or -1 if it never appears."
+
+#2. Clarifying questions
+#Are built-ins like haystack.find(needle) or slicing allowed, or do you want the matching written out by hand?
+#Should I expect big inputs where an O(n * m) approach could be too slow, or is a simple approach fine to start with?
+#Should I trust the input types, or defensively handle None?
+
+#3. Strategy/method, trade offs
+#Sliding window: i marks where a window starts in haystack, and the window is as long as needle.
+#Compare the window to needle at each i. The last valid start is len(haystack) - len(needle), so I stop there.
+#O(n * m) time. It's simple and fast in practice, but slicing makes a temporary copy of size m, so a manual char-by-char compare would be O(1) space.
+#KMP guarantees O(n + m) even on adversarial inputs like "aaaa...ab", but it costs an extra table and much trickier code,
+#so I'd start simple and only upgrade to KMP if the inputs are large or they ask for linear time.
+
+#4. Edge cases
+#needle longer than haystack -> range is empty, return -1.
+#needle == haystack -> match at index 0.
+#Match at the very end "sadbutsad", "sad" -> i = 6 must be included in the range, so +1 on the bound.
+#Partial matches that fail "aaab", "aab" -> window "aaa" fails, window "aab" at i = 1 matches.
+
+#1st solution- Sliding Window (compare slices)
+class Solution:
+    def strStr(self, haystack: str, needle: str) -> int:
+        # Time: O(n * m), Space: O(m) for the slice (O(1) if compared char by char)
+        n, m = len(haystack), len(needle) #store lengths so we don't recompute them
+        for i in range(n - m + 1): #i = window start, last valid start is n - m, +1 because range excludes the end
+            if haystack[i:i + m] == needle: #window of length m equals needle
+                return i #first match, so return immediately
+        return -1 #never matched
+
+# 1st Solution Logic:
+# Every possible starting index is checked left to right, so the first match we hit is the earliest one.
+# If needle is longer than haystack, n - m + 1 <= 0, the loop never runs and we fall through to -1.
+# Tracing "hello", "ll": n = 5, m = 2 -> i = 0 "he", i = 1 "el", i = 2 "ll" -> return 2.
+
+#- Time: O(n * m)  up to n - m + 1 windows, each compare costs up to m.
+#- Space: O(m)  the slice is a temporary copy; no other extra structures.
+
+
+#2nd solution- In case slicing isn't allowed: compare char by char with an inner pointer (same time, true O(1) space)
+class Solution:
+    def strStr(self, haystack: str, needle: str) -> int:
+        # Time: O(n * m), Space: O(1)
+        n, m = len(haystack), len(needle)
+        for i in range(n - m + 1): #i = window start in haystack
+            j = 0 #j = pointer inside needle
+            while j < m and haystack[i + j] == needle[j]: #keep going while the characters match
+                j += 1 #both pointers move forward together (i + j in haystack, j in needle)
+            if j == m: #j walked all the way through needle, so the whole needle matched
+                return i
+        return -1
+
+# 2nd Solution Logic:
+# Same idea as the 1st, but instead of making a slice we compare one character at a time and stop at the first mismatch.
+# That avoids the O(m) temporary copy, and on mismatches it usually bails out early.
+# Worst case is still O(n * m), e.g. haystack "aaaaaa", needle "aaab".
+# (One-liner if built-ins are allowed: return haystack.find(needle))
+
+#- Time: O(n * m)  worst case, every window matches almost all the way.
+#- Space: O(1)  only i and j.
+
+
+=============================================================================
+#16 3Sum Closest
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given an integer array and a target, and we need to find three numbers whose sum is as close to the
+# target as possible, and return that sum, not the numbers themselves."
+
+#2. Clarifying questions
+#Is it okay to sort nums in place, or should the caller's array stay untouched? (Leaving it alone costs an O(n) copy.)
+#Roughly how large can the array get? That decides whether O(n^2) is needed or O(n^3) brute force is fine.
+#Do the three numbers have to come from three different positions, even if the values repeat?
+
+#3. Strategy/method, trade offs
+#Sort first, then fix one number with i and use two pointers l and r on the rest of the array.
+#If the sum is below target I need it bigger, so l moves right. If above, r moves left. Track the sum with the
+#smallest distance to target. If the sum equals target exactly, return early since the distance can't be smaller.
+#O(n^2) time. Brute force with three nested loops is O(n^3) but needs no sorting and is the easiest to get right,
+#so it's a fine baseline for small inputs; sorting costs O(n log n) up front and reorders the caller's array,
+#but that's a small price since the two-pointer pass is what drops the time from cubic to quadratic.
+
+#4. Edge cases
+#Exactly 3 numbers -> the only possible sum is the answer.
+#Exact match exists -> return the target immediately.
+#All negatives or all positives -> still works, sorting + pointers don't depend on signs.
+#Duplicates -> don't affect correctness here, since we only need the closest sum, not unique triplets.
+
+#Pseudo code:
+#FUNCTION threeSumClosest(nums, target)
+#
+#    SORT nums #sorted order is what tells the pointers which direction to move
+#    closest = nums[0] + nums[1] + nums[2] #starting guess, any real triplet sum works so we have something to compare against
+#
+#    # Fix one number at a time, then squeeze two pointers on the rest of the array
+#    FOR i FROM 0 TO length of nums - 3 DO #i = the fixed number, leave room for l and r after it
+#        l = i + 1 #left pointer starts right after i
+#        r = length of nums - 1 #right pointer starts at the last index
+#
+#        WHILE l < r DO #stop when the pointers meet
+#            total = nums[i] + nums[l] + nums[r] #current triplet sum
+#
+#            # Exact hit: the distance can't get smaller than 0, so we're done
+#            IF total == target THEN
+#                RETURN total #return the exact match
+#
+#            # Is this sum closer to target than the best one so far?
+#            IF ABS(total - target) < ABS(closest - target) THEN
+#                closest = total #save it as the new best
+#
+#            # Move a pointer so the next sum lands closer to target
+#            IF total < target THEN #sum is too small
+#                l = l + 1 #move left pointer right to get a bigger number
+#            ELSE #sum is too big
+#                r = r - 1 #move right pointer left to get a smaller number
+#  #EX: sorted [-4,-1,1,2], target 1: i = 0 gives -4 + -1 + 2 = -3 then -4 + 1 + 2 = -1, i = 1 gives -1 + 1 + 2 = 2 (distance 1) -> closest = 2
+#
+#    RETURN closest #best sum seen across all the triplets we checked
+
+#1st solution- Sort + Two Pointers
+class Solution:
+    def threeSumClosest(self, nums: List[int], target: int) -> int:
+        # Time: O(n^2), Space: O(1) extra (O(n) or O(log n) depending on the sort)
+        nums.sort() #sorted order is what lets pointers decide which direction to move
+        closest = nums[0] + nums[1] + nums[2] #starting guess, any real triplet sum works
+
+        for i in range(len(nums) - 2): #i = fixed number, leave room for l and r after it
+            l, r = i + 1, len(nums) - 1 #two pointers on the rest of the array
+
+            while l < r: #pointers haven't met yet
+                total = nums[i] + nums[l] + nums[r] #current triplet sum
+
+                if total == target: #exact hit, can't do better
+                    return total
+
+                if abs(total - target) < abs(closest - target): #this sum is closer than the best so far
+                    closest = total #update the best
+
+                if total < target: #sum too small
+                    l += 1 #bigger number on the left
+                else: #sum too big
+                    r -= 1 #smaller number on the right
+
+        return closest #best sum seen across all triplets we checked
+
+# 1st Solution Logic:
+# Sorting means that moving l right can only increase the sum and moving r left can only decrease it.
+# So for each fixed i, the pointers walk toward the target instead of trying every pair.
+# We never need to compare unique triplets, only distances, so no duplicate skipping is needed.
+# Tracing [-1,2,1,-4], target 1: sorted [-4,-1,1,2]. i = 0: -4 + -1 + 2 = -3, then -4 + 1 + 2 = -1.
+# i = 1: -1 + 1 + 2 = 2 -> distance 1, closest = 2.
+
+#- Time: O(n^2)  sort is O(n log n), then n iterations of i, each with an O(n) two-pointer pass.
+#- Space: O(1)  only a few variables beyond the sort.
+
+
+#2nd solution- Brute Force (three nested loops), the fallback if they want to see the baseline first
+class Solution:
+    def threeSumClosest(self, nums: List[int], target: int) -> int:
+        # Time: O(n^3), Space: O(1)
+        closest = nums[0] + nums[1] + nums[2] #starting guess
+        for i in range(len(nums) - 2): #first number
+            for j in range(i + 1, len(nums) - 1): #second number, always after i
+                for k in range(j + 1, len(nums)): #third number, always after j
+                    total = nums[i] + nums[j] + nums[k]
+                    if abs(total - target) < abs(closest - target): #closer than the best so far
+                        closest = total
+        return closest
+
+# 2nd Solution Logic:
+# Try every possible set of three different indexes and keep the sum closest to target.
+# Correct and simple, but too slow for large inputs, which is why sorting + two pointers is the better answer.
+# Starting j after i and k after j means each triplet is checked once.
+
+#- Time: O(n^3)  three nested loops over the array.
+#- Space: O(1)  no sorting, only the closest variable.
+
+=============================================================================
+#15 3Sum
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given an integer array, and we need to return all the unique triplets that add up to zero.
+# The triplets can't repeat, even if the same values show up at different indexes."
+
+#2. Clarifying questions
+#Is it okay to sort the array in place, since we return values and not indexes?
+#Is extra space allowed (like a hash set), or should I aim for O(1) extra space?
+#If the array has a lot of repeated values, should I worry about performance there, or is it enough that the output has no repeated triplets?
+
+#3. Strategy/method, trade offs
+#Sort, then fix one number with i and use two pointers l and r to find pairs that sum to -nums[i].
+#Sorting also puts duplicates next to each other so they're easy to skip: skip a repeated i, and after a
+#match skip repeated values for l. O(n^2) time and O(1) extra space, and the sort is just O(n log n) on top, so it never dominates.
+#A hash set per i also gets O(n^2) time without the pointers, but it needs O(n) extra space and the duplicate handling is messier.
+#Brute force with three loops is O(n^3) and would need a set of tuples to remove repeats, so it's the worst on both time and space.
+
+#4. Edge cases
+#Fewer than 3 elements -> loop never runs, return [].
+#All zeros [0,0,0,0] -> exactly one triplet [0,0,0], not four, so duplicate skipping matters.
+#nums[i] > 0 -> sorted, so every number after it is positive too, no triplet can sum to 0, we can break early.
+#No valid triplet [1,2,3] -> return [].
+
+#1st solution- Sort + Two Pointers
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        # Time: O(n^2), Space: O(1) extra, not counting the output (O(n) or O(log n) for the sort)
+        nums.sort() #sorting lets us use pointers and puts duplicates side by side
+        res = [] #all unique triplets go here
+
+        for i in range(len(nums) - 2): #i = fixed number, need two more after it
+            if nums[i] > 0: #smallest number is positive, so the sum can never be 0
+                break
+            if i > 0 and nums[i] == nums[i - 1]: #same fixed value as the previous i, skip to avoid duplicate triplets
+                continue
+
+            l, r = i + 1, len(nums) - 1 #two pointers on the rest of the array
+            while l < r: #pointers haven't met yet
+                total = nums[i] + nums[l] + nums[r]
+
+                if total < 0: #too small
+                    l += 1 #bigger value on the left
+                elif total > 0: #too big
+                    r -= 1 #smaller value on the right
+                else: #total == 0, found one
+                    res.append([nums[i], nums[l], nums[r]])
+                    l += 1 #move both inward to look for the next pair
+                    r -= 1
+                    while l < r and nums[l] == nums[l - 1]: #skip repeated left values so we don't re-add the same triplet
+                        l += 1
+
+        return res
+
+# 1st Solution Logic:
+# Fixing i turns the problem into Two Sum on a sorted array: find l, r with nums[l] + nums[r] == -nums[i].
+# Duplicate control happens in two places: skipping a repeated i, and skipping a repeated l after a match.
+# We only need to skip l after a match; r takes care of itself, because once l moves to a new value
+# the sum changes and r adjusts on the next iterations.
+# Tracing [-1,0,1,2,-1,-4] -> sorted [-4,-1,-1,0,1,2].
+# i = 1 (-1): l = 2 (-1), r = 5 (2) -> sum 0 -> add [-1,-1,2]. Then l = 3 (0), r = 4 (1) -> add [-1,0,1].
+# i = 2 is also -1, equals nums[1] -> skipped. Result [[-1,-1,2],[-1,0,1]].
+
+#- Time: O(n^2)  sort is O(n log n), then each i runs one O(n) two-pointer pass.
+#- Space: O(1)  extra variables only, the output list isn't counted.
+
+# =============================================================================
+#11 Container With Most Water
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given an array of heights, each one is a vertical line. We need to pick two lines that, together with
+# the x-axis, hold the most water, and return that max amount."
+
+#2. Clarifying questions
+#Do I only need the max area, or also which two lines produce it?
+#If several pairs tie for the max area, does it matter which one I find? (Only matters if the pair is needed.)
+#Should I treat the input as read-only? (The two pointers approach never changes it anyway.)
+
+#3. Strategy/method, trade offs
+#Two pointers from both ends. Area = min(height[l], height[r]) * (r - l). Then move the pointer at the SHORTER line inward:
+#the width is shrinking, so the only way to beat the current area is to find a taller shorter-side.
+#Moving the taller line can never help because the shorter line still caps the height. O(n) time, O(1) space.
+#Brute force checking every pair is O(n^2), which is simpler to write and obviously correct, but it's too slow for big inputs
+#and the two pointer version gives the same answer by safely skipping pairs that can't win.
+
+#4. Edge cases
+#Two lines only [1,1] -> one container, area 1.
+#All heights equal -> the widest pair wins, so the first area computed is already the max.
+#A height of 0 on one side -> area 0, move that pointer and keep going.
+#Strictly increasing or decreasing heights -> pointers still converge in n - 1 steps.
+
+#1st solution- Two Pointers Method
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        # Time: O(n), Space: O(1)
+        l, r = 0, len(height) - 1 #start with the widest possible container
+        best = 0 #max area seen so far
+
+        while l < r: #stops when the pointers meet, since a container needs two different lines
+            area = min(height[l], height[r]) * (r - l) #shorter line sets the height, index gap is the width
+            best = max(best, area) #keep the bigger one
+
+            if height[l] < height[r]: #left line is shorter
+                l += 1 #move the shorter side, it's the one limiting the area
+            else: #right is shorter or equal
+                r -= 1
+
+        return best
+
+# 1st Solution Logic:
+# Start at max width. Every step the width shrinks by 1, so the area can only improve if the limiting height goes up.
+# The limiting line is the shorter one, so that's the pointer we throw away.
+# Moving the taller pointer would leave the same (or smaller) cap with less width, so it can never be better.
+# Tracing [1,8,6,2,5,4,8,3,7]: l = 0, r = 8 -> min(1,7) * 8 = 8, move l. l = 1, r = 8 -> min(8,7) * 7 = 49 -> best.
+# Nothing after that beats 49.
+
+#- Time: O(n)  each step moves one pointer inward, so at most n - 1 steps.
+#- Space: O(1)  only l, r, area and best.
+
+
+#2nd solution- Brute Force (check every pair), the fallback baseline
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        # Time: O(n^2), Space: O(1)
+        best = 0
+        for i in range(len(height)): #left line
+            for j in range(i + 1, len(height)): #right line, always after i
+                area = min(height[i], height[j]) * (j - i) #shorter line sets the height, index gap is the width
+                best = max(best, area)
+        return best
+
+# 2nd Solution Logic:
+# Try every pair of lines and keep the biggest area. Obviously correct, but too slow for n up to 10^5.
+# The two pointer solution gets the same answer because it safely skips pairs that can't beat the current best.
+
+#- Time: O(n^2)  every pair of lines is checked.
+#- Space: O(1)  only best and area.
+
+
+# =============================================================================
+#75 Sort Colors
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given an array with only 0s, 1s and 2s, representing red, white and blue, and I need to sort it in place
+# so all 0s come first, then 1s, then 2s, without using a library sort function."
+
+#2. Clarifying questions
+#Is a one-pass solution required, or is a two-pass counting solution acceptable?
+#Does O(1) extra space have to be strict, or is a small fixed-size count array fine?
+#Should I defensively handle values outside 0, 1, 2, or can I trust the input?
+
+#3. Strategy/method, trade offs
+#Three pointers (Dutch National Flag), one pass. l = where the next 0 goes, r = where the next 2 goes, i = scanner.
+#If nums[i] is 0, swap with l and move both l and i. If it's 2, swap with r and move only r.
+#If it's 1, just move i. O(n) time, O(1) space.
+#Counting sort (count the 0s, 1s, 2s, then overwrite) is also O(n) time and O(1) space and much easier to get right,
+#but it takes two passes; the Dutch flag does everything in one pass but the pointer rules are easy to mess up,
+#especially not moving i after swapping with r.
+
+#4. Edge cases
+#Single element -> nothing to do.
+#Already sorted [0,1,2] -> every swap is with itself or skipped, fine.
+#All the same value [2,2,2] -> every element swaps with r until i passes r.
+#Reverse order [2,1,0] -> 2 goes to the back, then the 0 gets pulled to the front.
+
+#1st solution- Three Pointers (Dutch National Flag)
+class Solution:
+    def sortColors(self, nums: List[int]) -> None:
+        # Time: O(n), Space: O(1)
+        l = 0 #boundary: everything LEFT of l is a 0
+        r = len(nums) - 1 #boundary: everything RIGHT of r is a 2
+        i = 0 #scanner: looks at each unknown element
+
+        while i <= r: #i <= r (not <) because nums[r] hasn't been checked yet
+            if nums[i] == 0: #belongs in the front
+                nums[i], nums[l] = nums[l], nums[i] #swap it into the 0 section
+                l += 1 #the 0 section grew by one
+                i += 1 #safe to move on, what we swapped in from l was already examined
+            elif nums[i] == 2: #belongs in the back
+                nums[i], nums[r] = nums[r], nums[i] #swap it into the 2 section
+                r -= 1 #the 2 section grew by one, i stays because the new nums[i] is unchecked
+            else: #it's a 1
+                i += 1 #1s stay in the middle, move on
+        #no return statement needed, we modify nums in place
+
+# 1st Solution Logic:
+# The array is split into four zones: [0s | 1s | unknown | 2s], split by l, i and r.
+# Everything before l is 0. Between l and i is 1. Between i and r is unknown. After r is 2.
+# We only advance i after a 0 or a 1, because the element swapped in from l is always a 1 (already seen).
+# After a 2, the element swapped in from r is unknown, so i must stay and check it.
+# Tracing [2,0,1]: i = 0 is 2 -> swap with r -> [1,0,2], r = 1. i = 0 is 1 -> i = 1.
+# i = 1 is 0 -> swap with l (index 0) -> [0,1,2], l = 1, i = 2. i > r -> done.
+
+#- Time: O(n)  each step either moves i forward or shrinks r, so at most about n steps total.
+#- Space: O(1)  three index variables, sorted in place.
+
+# =============================================================================
+#26 Remove Duplicates from Sorted Array
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given a sorted array, and I need to remove the duplicates in place so each value shows up once,
+# keep the order, and return k, the number of unique values. The first k spots must hold those values."
+
+#2. Clarifying questions
+#Is O(1) extra space strictly required, or would a set / new list be acceptable if it's simpler?
+#Should I guard against an empty array even though it may not be in the input, or can I trust the constraints?
+#Can I rely on the input being sorted, or should I be defensive if it isn't?
+
+#3. Strategy/method, trade offs
+#Two pointers (slow and fast). Fast scans every element; slow is the next slot for a new unique value.
+#Since the array is sorted, a new value is just one that's different from the last unique value we kept.
+#When fast finds one, copy it to slow and move slow. Final slow = k. O(n) time, O(1) space.
+#Using a set would also work and is shorter, but it costs O(n) space, needs a sort afterward to restore the order,
+#and ignores the fact that the input is already sorted, so two pointers is cheaper on both time and space.
+
+#4. Edge cases
+#Empty array -> return 0.
+#Single element -> it's unique, return 1.
+#All the same [2,2,2] -> only the first is kept, return 1.
+#No duplicates [1,2,3] -> every element gets copied onto itself, return len(nums).
+
+#1st solution- Two Pointers Method
+class Solution:
+    def removeDuplicates(self, nums: List[int]) -> int:
+        # Time: O(n), Space: O(1)
+        if not nums: #empty array has no uniques
+            return 0
+
+        slow = 1 #slow pointer: next slot for a new unique value (index 0 is always unique, so start at 1)
+        for fast in range(1, len(nums)): #fast pointer: scans every element after the first
+            if nums[fast] != nums[slow - 1]: #differs from the last unique value we kept -> it's new
+                nums[slow] = nums[fast] #copy it into the slow spot (if slow == fast it copies onto itself, harmless)
+                slow += 1 #next unique goes one spot to the right
+        return slow #like Remove Element we DO return: slow = k, the number of unique values
+
+# 1st Solution Logic:
+# Everything LEFT of slow is the unique values, packed at the front in sorted order.
+# nums[slow - 1] is always the last unique value we kept, so comparing against it is how we detect a new value.
+# Duplicates are just skipped; they get overwritten later or end up past index k, where we don't care.
+# Tracing [0,0,1,1,2]: slow = 1. fast = 1 (0) equals nums[0] -> skip. fast = 2 (1) differs -> nums[1] = 1, slow = 2.
+# fast = 3 (1) equals nums[1] -> skip. fast = 4 (2) differs -> nums[2] = 2, slow = 3 -> return 3, nums = [0,1,2,...].
+
+#- Time: O(n)  fast visits each element once.
+#- Space: O(1)  only two index variables, nums is modified in place.
+
+
+#2nd solution- Set + Sort (in case they don't want to rely on the sorted order), simpler but uses extra space
+class Solution:
+    def removeDuplicates(self, nums: List[int]) -> int:
+        # Time: O(n log n), Space: O(n)
+        nums[:] = sorted(set(nums)) #set drops duplicates, sorted restores the order, nums[:] overwrites the ORIGINAL list in place
+        return len(nums) #k = number of unique values
+
+# 2nd Solution Logic:
+# A set removes duplicates for us, then sorting puts the values back in order.
+# nums[:] = ... matters: plain nums = ... would only rebind the local name and the original list wouldn't change.
+# This is short and correct, but it ignores that the input is already sorted and breaks the O(1) space requirement,
+# so the two pointer solution is the one to lead with.
+
+#- Time: O(n log n)  building the set is O(n), sorting the unique values is O(n log n).
+#- Space: O(n)  the set and the sorted list hold up to n values.
+
