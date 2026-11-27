@@ -426,4 +426,214 @@ class Solution:
 #- Space: O(1) only two index variables, nums is modified in place.
 
 
+# =============================================================================
+#88 Merge Sorted Array
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given two sorted arrays, nums1 with m elements followed by n empty slots and nums2 with n elements,
+# and we need to merge nums2 into nums1 so that nums1 ends up as one sorted array, in place."
+
+#2. Clarifying questions
+#Is extra space allowed, or does this have to be O(1)? (That decides between copying nums1 and filling from the back.)
+#Since 0 can be a real value too, can I rely on m and n to know where nums1's real data ends, instead of the zeros?
+
+#3. Strategy/method, trade offs
+#Merging from the front would overwrite nums1 values I still need, so I'll fill from the BACK with three pointers:
+#i on nums1's last real element, j on nums2's last, k on nums1's last slot. Place the bigger of the two at k
+#each time and move that pointer (and k) left. O(m + n) time, O(1) space.
+#Another option is to copy nums1's real elements into a new list and merge from the front, but that costs O(m) space.
+#Append nums2 and sort also works, but it's O((m + n) log(m + n)) and ignores that both are already sorted.
+
+#4. Edge cases
+#n == 0 (nums2 empty) -> the loop never runs, nums1 is already the answer.
+#m == 0 (nums1 has no real elements) -> i = -1, so the i >= 0 check fails every time and nums2 gets copied in.
+#All of nums2 is bigger [1,2,3,0,0,0] + [4,5,6] -> nums2 fills the back, nums1's elements never move.
+#All of nums2 is smaller [4,5,6,0,0,0] + [1,2,3] -> nums1's elements shift right first, then nums2 fills the front.
+#Equal values -> the else branch takes nums2's value, which is fine since equal values are interchangeable.
+
+#PSEUDOCODE
+#FUNCTION merge(nums1, m, nums2, n):
+#
+#    i = m - 1  #pointer at last real element of nums1
+#    j = n - 1  #pointer at last element of nums2
+#    k = m + n - 1  #pointer at the last slot of nums1, where the biggest remaining value goes
+#
+#    WHILE j >= 0:  #only need to run while nums2 still has elements (leftover nums1 is already in place)
+#        IF i >= 0 AND nums1[i] > nums2[j]:  #nums1's element is bigger
+#            nums1[k] = nums1[i]
+#            i -= 1
+#        ELSE:  #nums2's element is bigger/equal, or nums1 ran out
+#            nums1[k] = nums2[j]
+#            j -= 1
+#        k -= 1  #this slot is filled, move left
+#
+#    (no return, nums1 is modified in place)
+
+#1st solution- Three Pointers Method (filling from the back)
+class Solution:
+    def merge(self, nums1: List[int], m: int, nums2: List[int], n: int) -> None:
+        # Time: O(m + n), Space: O(1)
+        i = m - 1 #pointer at the last REAL element in nums1 (skips the empty slots)
+        j = n - 1 #pointer at the last element in nums2
+        k = m + n - 1 #pointer at the last slot in nums1, where the largest remaining value goes
+
+        while j >= 0: #stop when nums2 is used up; leftover nums1 elements are already in the right place
+            if i >= 0 and nums1[i] > nums2[j]: #nums1 still has elements AND its element is bigger
+                nums1[k] = nums1[i] #place nums1's element at the back
+                i -= 1 #nums1's pointer moves left
+            else: #nums2's is bigger/equal OR nums1 has no elements left (i < 0)
+                nums1[k] = nums2[j] #place nums2's element at the back
+                j -= 1 #nums2's pointer moves left
+            k -= 1 #slot k is filled either way, move left
+        #no return statement needed, we modify nums1 in place
+
+# 1st Solution Logic:
+# Everything to the RIGHT of k is already the largest values in sorted order (final position).
+# Filling from the back means we never overwrite a nums1 element we still need, because k = i + j + 1,
+# so k stays ahead of i for as long as nums2 has elements left.
+# We only loop while j >= 0: once nums2 is used up, the remaining nums1 elements are already in place.
+# Tracing nums1 = [1,2,3,0,0,0], nums2 = [2,5,6]: 6 goes to the back, then 5, then nums1's 3, then nums2's 2,
+# and the leftover 1,2 in nums1 are already correct -> [1,2,2,3,5,6].
+
+#- Time: O(m + n)  each step moves one pointer left, and each element is placed exactly once.
+#- Space: O(1)  merging happens inside nums1, only three index variables.
+
+
+# =============================================================================
+#21 Merge Two Sorted Lists
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given the heads of two sorted linked lists, and we need to merge them into one sorted linked list
+# by splicing their nodes together, and return the head of the merged list."
+
+#2. Clarifying questions
+#When both lists have an equal value, does it matter which node comes first (stable merge), or are they interchangeable?
+#Is recursion fine, or do you prefer iterative so there's no call-stack space?
+
+#3. Strategy/method, trade offs
+#Two pointers, one per list, plus a DUMMY node so the head isn't a special case. A tail pointer builds the result:
+#attach the smaller current node and advance that list. When one runs out, attach the rest of the other.
+#O(n + m) time, O(1) space. Recursion works too but uses O(n + m) call-stack.
+
+#4. Edge cases
+#Both empty -> return None. One empty -> return the other list. Equal values -> either one first is fine.
+
+#PSEUDOCODE
+#FUNCTION mergeTwoLists(list1, list2):
+#
+#    dummy = new node  #placeholder so the first real node isn't a special case
+#    tail = dummy  #tail always points at the last node of the merged list
+#
+#    WHILE list1 AND list2:  #while both lists still have nodes
+#        IF list1.val <= list2.val:
+#            tail.next = list1  #attach the smaller node
+#            list1 = list1.next  #move that list forward
+#        ELSE:
+#            tail.next = list2
+#            list2 = list2.next
+#        tail = tail.next  #move tail onto the node we just attached
+#
+#    tail.next = list1 OR list2  #at most one list has leftovers, they're already sorted so attach them whole
+#
+#    RETURN dummy.next  #skip the dummy placeholder
+
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        # Time: O(n + m), Space: O(1)
+        dummy = ListNode() #placeholder node, its .next will be the real head
+        tail = dummy #tail = last node of the merged list so far
+
+        while list1 and list2: #both lists still have nodes
+            if list1.val <= list2.val:
+                tail.next = list1 #attach the smaller node
+                list1 = list1.next #advance that list
+            else:
+                tail.next = list2
+                list2 = list2.next
+            tail = tail.next #move tail forward to the node we just added
+
+        tail.next = list1 or list2 #attach whichever list still has nodes (the other is None)
+        return dummy.next #real head is right after the dummy
+
+# Solution Logic:
+# The dummy node removes the "is the result empty yet?" check.
+# Each step we pick the smaller current node, so the merged list stays sorted.
+# Leftover nodes are already sorted, so we attach them in one step.
+
+#- Time: O(n + m)  each node is visited once.
+#- Space: O(1)  we reuse the existing nodes, only dummy + tail are extra.
+
+
+# =============================================================================
+#1768 Merge Strings Alternately
+# =============================================================================
+
+#1. Restate the problem
+#"So we're given two strings, word1 and word2, and we need to merge them by adding letters in alternating order,
+# starting with word1. If one string is longer, we add its extra letters to the end, then return the merged string."
+
+#2. Clarifying questions
+#Is it okay to use built-ins like zip_longest, or do you want the pointers written out by hand?
+#Can I assume both inputs are valid strings, or should I handle None?
+
+#3. Strategy/method, trade offs
+#Two pointers, i on word1 and j on word2. While both have letters, add word1[i] then word2[j] and move both.
+#Then append the leftover of the longer word with a slice. O(n + m) time and space.
+#I build a list and join at the end, which beats repeated string concatenation (+=) since strings are immutable.
+#Another option is one loop up to max(len) with bounds checks on each word, or itertools.zip_longest,
+#but the two-pointer loop + slice avoids checking the bounds on every step.
+
+#4. Edge cases
+#Same length "abc", "pqr" -> "apbqcr" (pure alternation, both slices at the end are empty).
+#word1 shorter "ab", "pqrs" -> "apbq" + leftover "rs" -> "apbqrs".
+#word2 shorter "abcd", "pq" -> "apbq" + leftover "cd" -> "apbqcd".
+#One empty "", "xyz" -> the loop never runs, the slices add all of "xyz". Both empty -> "".
+
+#PSEUDOCODE
+#FUNCTION mergeAlternately(word1, word2):
+#
+#    result = []  #list of characters/pieces, joined at the end
+#    i = 0  #pointer for word1
+#    j = 0  #pointer for word2
+#
+#    WHILE i < length of word1 AND j < length of word2:  #both still have letters
+#        Add word1[i] to result
+#        Add word2[j] to result
+#        i += 1
+#        j += 1
+#
+#    Add word1[i:] to result  #leftover of word1 (empty string if none)
+#    Add word2[j:] to result  #leftover of word2 (empty string if none)
+#
+#    RETURN result joined into one string
+
+#1st solution- Two Pointers Method (one pointer per word)
+class Solution:
+    def mergeAlternately(self, word1: str, word2: str) -> str:
+        # Time: O(n + m), Space: O(n + m)
+        res = [] #collect pieces here, join once at the end (faster than += on a string)
+        i = j = 0 #i = pointer for word1, j = pointer for word2, both start at the front
+
+        while i < len(word1) and j < len(word2): #both words still have letters
+            res.append(word1[i]) #word1 goes first
+            res.append(word2[j]) #then word2
+            i += 1 #move both pointers forward together
+            j += 1
+
+        res.append(word1[i:]) #leftover of word1 (empty string if it was used up)
+        res.append(word2[j:]) #leftover of word2 (only one of these two slices is non-empty)
+
+        return "".join(res) #glue all the pieces into the final string
+
+# 1st Solution Logic:
+# The while loop handles the alternating part and stops as soon as the SHORTER word runs out.
+# At that point one pointer is at the end of its word, so its slice is "" (adds nothing),
+# and the other slice grabs the entire leftover of the longer word in one step.
+# Tracing "ab", "pqrs": a, p, b, q -> loop ends (i = 2) -> word1[2:] = "" and word2[2:] = "rs" -> "apbqrs".
+
+#- Time: O(n + m)  every character is visited or sliced once, and join is linear.
+#- Space: O(n + m)  the output string holds all characters (the list of pieces is the same size).
+
 
