@@ -1090,3 +1090,4 @@ class Solution:
 #- Time: O(n log n)  building the set is O(n), sorting the unique values is O(n log n).
 #- Space: O(n)  the set and the sorted list hold up to n values.
 
+forgotString Compression (LC 443)
