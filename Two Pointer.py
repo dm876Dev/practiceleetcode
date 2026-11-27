@@ -1,7 +1,7 @@
 #https://leetcode.com/problems/valid-palindrome/
 #opposite direction two pointer method
 class Solution:
-    def isPalindrome(self, s: str) -> bool:
+    def validPalindrome(self, s: str) -> bool:
         l = 0
         r = len(s)-1
         while l < r:
@@ -22,7 +22,7 @@ class Solution:
 #you can also do reversing the string with string slicing g [::-1]-
 
 class Solution:
-    def isPalindrome(self, s: str) -> bool:
+    def validPalindrome(self, s: str) -> bool:
         #use expression generator to create a new string
         
         # Create a new string using .join() on empty seperate '' to combine characters without spaces
@@ -36,18 +36,9 @@ class Solution:
             return False
         return True
 
-class Solution:
-    def isPalindrome(self, s: str) -> bool:
-        # Comparison check: Compare normal strings to reversed string, return False if they don't match
-        if new_string != new_string[::-1]:
-            return False
-
-        # If they match, return True
-        return True
-
 
 class Solution:
-    def isPalindrome(self, s: str) -> bool:
+    def validPalindrome(self, s: str) -> bool:
         new_string = ''.join(c.lower() for c in s if c.isalnum())
         
         if new_string == new_string[::-1]:
@@ -138,7 +129,7 @@ class Solution:
 
 #https://leetcode.com/problems/palindrome-number/ 
 class Solution:
-    def isPalindrome(self, x: int) -> bool:
+    def PalindromeNumber(self, x: int) -> bool:
         #two pointer, more space-efficent O(1) constant extra space, compares without makign copy or even modifying:
         #T: O(1), S: O(1)
         s = str(x)
@@ -295,15 +286,17 @@ Yes. I can convert the string into a array using chars = list(s),  and modify in
 #"So we're given an array of characters, and we need to reverse the order of the characters by modifying the 
 # original array."
 
+#2. Clarifying questions
 #Should I treat letters and numbers the same way, or is there alphanumeric or special character rule i should account for?
 #Im nodifying in place so it must modify the original array right are copies aren't allowed right?
 
+#3 Strategy/method, trade offs
 #I'll use two pointers method: one pointer starts at the beginning of the array and one at the end. I'll swap 
 #the characters at those positions, then them inward until they meet or cross. This reverses the array in-place 
 #with O(1) extra space.
 #Recursion is another option, but it requires O(n) call-stack space, so the iterative approach is more space-efficient.
 
-
+#4. Edge cases
 #I'd also consider a few edge cases(from the examples): odd-length array like hello leaves the middle l character in place, 
 #and an even-length array swaps every pair. also a single character requires no swaps.  So our code needs to accomodate that.
 
@@ -349,5 +342,88 @@ class Solution:
 
 # The recursive solution is less space-efficient because each recursive call uses space on the call stack.
 # Space: iterative is o(1) vs recursive is O(n)
+
+
+# =============================================================================
+#283 Move Zeroes
+# =============================================================================
+
+#1. Restate the problem
+#"So basically I've got a list of numbers, and I need to push every zero to the back while the other numbers
+# keep the order they were already in. And I have to do it right on that same list, not by building a new one."
+
+#2. Clarifying questions
+#Can I assume the array can be empty or have one element? 
+#Are there constraints on extra space, or must it be O(1)? Im assuming no copying the array.
+
+#3. Strategy/method, trade offs
+#I'll use two pointers (same direction, slow and fast). Fast scans every element; slow marks where the next
+#non-zero goes. When fast finds a non-zero, swap it into slow's spot and move slow forward. O(n) time, O(1) space.
+#A new list would work too, but costs O(n) extra space.
+
+#4. Edge cases
+#All zeros [0,0,0] -> nothing changes. No zeros [1,2,3] -> swaps happen with itself, still fine.
+#Single element -> nothing to do.
+
+#1st solution- Two Pointers Method
+class Solution:
+    def moveZeroes(self, nums: List[int]) -> None:
+        # Time: O(n), Space: O(1)
+        slow = 0 #slow pointer: where the next non-zero should go
+        for fast in range(len(nums)): #fast pointer: scans every element once
+            if nums[fast] != 0: #found a non-zero
+                nums[slow], nums[fast] = nums[fast], nums[slow] #swap it into the slow spot (if slow == fast it swaps w/ itself, harmless)
+                slow += 1 #next non-zero goes one spot to the right
+        #no return statement needed, we modify nums in place
+
+# 1st Solution Logic:
+# Everything LEFT of slow is already the non-zero elements in their original order.
+# Everything between slow and fast is zeros (they got skipped over).
+# Each time fast finds a non-zero, swapping puts it at slow and pushes a zero toward the right.
+
+#- Time: O(n)  fast visits each element once.
+#- Space: O(1) only two index variables.
+
+
+# =============================================================================
+#27 Remove Element
+# =============================================================================
+
+#1. Restate the problem + claryfying question
+"Just to make sure I understand, I'm given an integer array and a target number, and I need to clear out every copy of that number by moving the
+# leftover numbers to the front of the list. Then I give back how many numbers I kept. I don't need to worry about anything beyond that count. Is that correct?"
+
+
+#3. Strategy/method, trade offs
+#Two pointers method (slow and fast). Fast scans every element; slow only moves when fast finds a non-val, and we
+#overwrite at slow. Final slow = k. Overwriting is enough since we don't need to keep val. O(n) time, O(1) space.
+
+
+#4. Edge cases
+#Empty array -> return 0. Every element equals val [3,3,3], val = 3 -> return 0, slow never moves.
+#No element equals val [1,2,3], val = 4 -> every element gets copied onto itself, return len(nums).
+#Single element -> return 0 if it equals val, otherwise 1.
+
+#1st solution- Two Pointers Method
+class Solution:
+    def removeElement(self, nums: List[int], val: int) -> int:
+        # Time: O(n), Space: O(1)
+        slow = 0 #slow pointer: next slot for a keeper, also becomes the count k
+        for fast in range(len(nums)): #fast pointer: scans every element once
+            if nums[fast] != val: #found a keeper (not val)
+                nums[slow] = nums[fast] #overwrite the slow spot with it (if slow == fast it copies onto itself, harmless)
+                slow += 1 #next keeper goes one spot to the right
+        return slow #unlike Move Zeroes we DO return: slow = k, the number of elements that are not val
+
+# 1st Solution Logic:
+# Everything LEFT of slow is already the keepers (non-val), packed at the front in their original order.
+# Everything between slow and fast is leftover values we don't care about (skipped vals or already-copied keepers).
+# Each time fast finds a non-val, it gets copied to slow's spot. Elements equal to val are just skipped,
+# so they get overwritten later or end up past index k, where we don't care.
+# When fast reaches the end, slow = k.
+
+#- Time: O(n)  fast visits each element once.
+#- Space: O(1) only two index variables, nums is modified in place.
+
 
 
